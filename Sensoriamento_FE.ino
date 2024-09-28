@@ -55,7 +55,7 @@ void setup(void){
 
   // Inicialização do MPU
   Serial.println("Inicializando MPU!");
-  if (!mpu.begin()) {
+  if (!mpu.begin()) { // mpu.begin(): método da biblioteca
     Serial.println("MPU não encontrado, tentando novamente");
     while (1) {
       delay(10);
@@ -64,9 +64,9 @@ void setup(void){
   Serial.println("MPU6050 Encontrado!");
   
   // Configuração do MPU, mudar caso necessário
-  mpu.setAccelerometerRange(MPU6050_RANGE_16_G);
-  mpu.setGyroRange(MPU6050_RANGE_250_DEG);
-  Serial.println("MPU6050 configurado para: +-16G, +-250º/s e 21Hz");
+  mpu.setAccelerometerRange(MPU6050_RANGE_16_G);  // Configura resolução do acelerômetro
+  mpu.setGyroRange(MPU6050_RANGE_250_DEG);        // Configura resolução do gyro
+  Serial.println("MPU6050 configurado para: +-16G, +-250º/s");
 
   // Inicia conexão à internet
   WiFi_init(ssid, pwrd);
@@ -76,33 +76,33 @@ void setup(void){
   }
 
 void loop(){
-  ti = millis();
+  ti = millis(); // Tempo inicial para integração
   // Integra a aceleração para achar a velocidade
   vx = vx + acx*(ti - t0);
   vy = vy + acy*(ti - t0);
   vz = vz + acz*(ti - t0);
-  v = sqrt(sq(vx)+sq(vy)+sq(vz)); // Velocidade absoluta
+  v = sqrt(sq(vx)+sq(vy)+sq(vz)); // Calcula o módulo da velocidade
   Serial.print("Velocidade: ");
   Serial.print(v);
   Serial.print("m/s, ");
 
   // Coleta dados das acelerações em x, y, z do MPU6050
-  sensors_event_t a, g, temp;
+  sensors_event_t a, g, temp;  // Objetos de leitura da biblioteca também
   mpu.getEvent(&a, &g, &temp); // &g e &temp podem ser utilizados caso necessário, representam o gyro e o sensor de temperatura embutido do MPU6050
 
-  t0 = ti;
+  t0 = ti;                      // Segundo tempo para integração
   acx = a.acceleration.x;
   acy = a.acceleration.y;
   acz = a.acceleration.z;
   ac  = sqrt(sq(acx)+sq(acy)+sq(acz)); // Aceleração absoluta
-  acg = ac/9.81;
+  acg = ac/9.81;                       // Aceleração em G's
   Serial.print("Aceleração: ");
   Serial.print(ac);
   Serial.print("m/s^2, ");
   Serial.print(acg);
   Serial.println("G's");
 
-  // Coleta e calcula temperaturas
+  // Coleta e calcula temperaturas: /1023.0 por ser analog, -0.5 constante de correção do sensor segundo o datasheet, *100 corrige de % para ºC 
   temp1 = (analogRead(tempPin1)/1023.0-0.5)*100;
   temp2 = (analogRead(tempPin2)/1023.0-0.5)*100;
   temp3 = (analogRead(tempPin3)/1023.0-0.5)*100;
@@ -120,8 +120,8 @@ void loop(){
   // Verifica conexão Wi-Fi
   if(WiFi.status() == WL_CONNECTED){
     Serial.println("Rede OK!");
-    WiFiClient client;
-    HTTPClient http;
+    WiFiClient client;  // Objeto WiFi de cliente na rede local
+    HTTPClient http;    // Objeto HTTP de subdomínio na rede local
 
     Serial.println("Chamando servidor...");
     // Inicializa servidor
@@ -152,6 +152,7 @@ void loop(){
 void WiFi_init(String ssid, String pwrd){
   Serial.print("Tentando estabelecer conexão com a rede: ");
   Serial.println(ssid);
+  // Tenta conexão
   WiFi.begin(ssid, pwrd);
   Serial.println("Conectando...");
   // Aguarda conexão
